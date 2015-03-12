@@ -149,29 +149,30 @@ class ContextMaker(object):
                 digits = digits[group_size:]
             return groups
 
-        decimal.getcontext().prec = 99 # could be more or less but it should be as many as the supported digits
-        # this is supposed to be the only place for unintensional precision loss
-        number = dec(str(number)) # to support Python 2.6
-        # print('raw', number)
-        n = number.quantize(dec(10) ** -self.precision)
-        # get rid of the exponent or trailing zeros in one step
-        n = n.quantize(dec(1)) if n == n.to_integral() else n.normalize()
-        rounded = True if n != number else False
+        with decimal.localcontext() as ctx:
+            ctx.prec = 99 # could be more or less but it should be as many as the supported digits
+            # this is supposed to be the only place for unintensional precision loss
+            number = dec(str(number)) # to support Python 2.6
+            # print('raw', number)
+            n = number.quantize(dec(10) ** -self.precision)
+            # get rid of the exponent or trailing zeros in one step
+            n = n.quantize(dec(1)) if n == n.to_integral() else n.normalize()
+            rounded = True if n != number else False
 
-        # split number parts
-        m = re.match(r"(-)?(\d+)\.?(\d+)?", str(n))
-        
-        if m:
-            sign, integer, fraction = m.groups()
-            integer = reverse_group_by([int(i) for i in integer], self.integer_grouping)
-            if fraction and fraction != '0':
-                fraction = reverse_group_by([int(i) for i in fraction], self.fraction_grouping)
+            # split number parts
+            m = re.match(r"(-)?(\d+)\.?(\d+)?", str(n))
+
+            if m:
+                sign, integer, fraction = m.groups()
+                integer = reverse_group_by([int(i) for i in integer], self.integer_grouping)
+                if fraction and fraction != '0':
+                    fraction = reverse_group_by([int(i) for i in fraction], self.fraction_grouping)
+                else:
+                    fraction = []
             else:
-                fraction = []
-        else:
-            raise ValueError('Not a valid number.')
+                raise ValueError('Not a valid number.')
 
-        return NumberContext(n, integer, fraction, rounded, sign=='-')
+            return NumberContext(n, integer, fraction, rounded, sign=='-')
 
 
 class ContextBase(object):
