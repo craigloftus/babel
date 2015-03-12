@@ -36,9 +36,9 @@ specific function's docstring.
 """
 from __future__ import division, print_function, unicode_literals
 
-import re, decimal, sys
+import re, sys
 
-dec = decimal.Decimal
+from babel.numbers import Decimal, localcontext
 
 
 class SpellerNotFound(Exception):
@@ -149,14 +149,14 @@ class ContextMaker(object):
                 digits = digits[group_size:]
             return groups
 
-        with decimal.localcontext() as ctx:
+        with localcontext() as ctx:
             ctx.prec = 99 # could be more or less but it should be as many as the supported digits
             # this is supposed to be the only place for unintensional precision loss
-            number = dec(str(number)) # to support Python 2.6
+            number = Decimal(str(number)) # to support Python 2.6
             # print('raw', number)
-            n = number.quantize(dec(10) ** -self.precision)
+            n = number.quantize(Decimal(10) ** -self.precision)
             # get rid of the exponent or trailing zeros in one step
-            n = n.quantize(dec(1)) if n == n.to_integral() else n.normalize()
+            n = n.quantize(Decimal(1)) if n == n.to_integral() else n.normalize()
             rounded = True if n != number else False
 
             # split number parts
@@ -280,7 +280,7 @@ class GroupContext(ContextBase):
         self.number = number
         self.side = side
         self.index = index
-        self.value = sum(d.value*dec(10)**e for e,d in enumerate(self.digits)) # might use int
+        self.value = sum(d.value*Decimal(10)**e for e,d in enumerate(self.digits)) # might use int
         
     def __len__(self):
         return len(self.digits)

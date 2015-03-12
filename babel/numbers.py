@@ -18,10 +18,32 @@
 # TODO:
 #  Padding and rounding increments in pattern:
 #  - http://www.unicode.org/reports/tr35/ (Appendix G.6)
-from decimal import Decimal, InvalidOperation
 import math
 import re
+import sys
 from datetime import date as date_, datetime as datetime_
+
+# Python 3.3 includes cdecimal, which is much much faster;  we try to use it
+# when available but keep accepting pure Python decimals for compatibility
+if sys.version_info[:2] >= (3, 3):
+    from decimal import Decimal, InvalidOperation, localcontext
+    Decimals = Decimal
+else:
+    from decimal import (Decimal as dec_,
+                         InvalidOperation as invop_,
+                         localcontext as lctx_)
+    try:
+        from cdecimal import (Decimal as cdec_,
+                              InvalidOperation as cinvop_,
+                              localcontext as clctx_)
+        Decimal = cdec_
+        Decimals = (dec_, cdec_)
+        InvalidOperation = (invop_, cinvop_)
+        localcontext = clctx_
+    except ImportError:
+        Decimal = Decimals = dec_
+        InvalidOperation = invop_
+        localcontext = lctx_
 
 from babel.core import default_locale, Locale, get_global
 from babel._compat import range_type
@@ -433,7 +455,7 @@ number_re = re.compile(r"%s%s%s" % (PREFIX_PATTERN, NUMBER_PATTERN,
 
 def split_number(value):
     """Convert a number into a (intasstring, fractionasstring) tuple"""
-    if isinstance(value, Decimal):
+    if isinstance(value, Decimals):
         # NB can't just do text = str(value) as str repr of Decimal may be
         # in scientific notation, e.g. for small numbers.
 
@@ -514,7 +536,7 @@ def bankersround(value, ndigits=0):
                 break
 
     scale = 10**ndigits
-    if isinstance(value, Decimal):
+    if isinstance(value, Decimals):
         return Decimal(int(value * scale + add)) / scale * sign
     else:
         return float(int(value * scale + add)) / scale * sign
@@ -648,7 +670,7 @@ class NumberPattern(object):
             # Exponent grouping
             elif self.int_prec[1]:
                 exp = int(exp / self.int_prec[1]) * self.int_prec[1]
-            if not isinstance(value, Decimal):
+            if not isinstance(value, Decimals):
                 value = float(value)
             if exp < 0:
                 value = value * 10**(-exp)
