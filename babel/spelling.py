@@ -38,7 +38,7 @@ from __future__ import division, print_function, unicode_literals
 
 import re, sys
 
-from babel.numbers import Decimal, localcontext
+from babel._compat import Decimal, localcontext
 
 
 class SpellerNotFound(Exception):

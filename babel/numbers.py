@@ -20,36 +20,11 @@
 #  - http://www.unicode.org/reports/tr35/ (Appendix G.6)
 import math
 import re
-import sys
 from datetime import date as date_, datetime as datetime_
 
-# Python 3.3 includes cdecimal, which is much much faster;  we try to use it
-# when available but keep accepting pure Python decimals for compatibility
-if sys.version_info[:2] >= (3, 3):
-    from decimal import Decimal, InvalidOperation, localcontext
-    Decimals = Decimal
-else:
-    from decimal import (Decimal as dec_,
-                         InvalidOperation as invop_,
-                         localcontext as lctx_)
-    try:
-        from cdecimal import (Decimal as cdec_,
-                              InvalidOperation as cinvop_,
-                              localcontext as clctx_)
-        Decimal = cdec_
-        Decimals = (dec_, cdec_)
-        InvalidOperation = (invop_, cinvop_)
-        localcontext = clctx_
-    except ImportError:
-        Decimal = Decimals = dec_
-        InvalidOperation = invop_
-        localcontext = lctx_
-
 from babel.core import default_locale, Locale, get_global
-from babel._compat import range_type
-
 from babel.spelling import NumberSpeller
-
+from babel._compat import range_type, Decimal, Decimals, InvalidOperation
 
 LC_NUMERIC = default_locale('LC_NUMERIC')
 
