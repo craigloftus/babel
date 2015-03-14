@@ -44,7 +44,7 @@ from babel._compat import Decimal, localcontext
 class SpellerNotFound(Exception):
     """There is no speller for the given locale"""
 
-    
+
 class TooBigToSpell(Exception):
     """Overflow for the speller
 
@@ -73,13 +73,13 @@ class NumberSpeller(object):
         # generate the number if a ContextMaker exists
         if hasattr(self._speller, '_context_maker'):
             number = self._speller._context_maker(number)
-    
+
         # call transform
         self._speller(number, ordinal)
 
         # return the result (construct it recursively)
         return '{0}'.format(number)
-        
+
     @classmethod
     def get_spell_function(cls, locale):
         """
@@ -209,7 +209,7 @@ class ContextBase(object):
             return unicode(self).encode('utf-8')
         else:
             return self.__unicode__()
-        
+
 
 class NumberContext(ContextBase):
     """
@@ -225,7 +225,7 @@ class NumberContext(ContextBase):
         self.fraction = SideContext(fraction, self)
         self.rounded = rounded
         self.negative = negative
-        
+
     def __iter__(self):
         yield self.fraction
         yield self.integer
@@ -259,14 +259,14 @@ class SideContext(ContextBase):
             s += g.value*10**e
             e += len(g)
         self.value = s
-        
+
     def __iter__(self):
         for group in self.groups:
             yield group
 
     def __len__(self):
         return sum(len(g) for g in self)
-        
+
 
 class GroupContext(ContextBase):
     """
@@ -281,7 +281,7 @@ class GroupContext(ContextBase):
         self.side = side
         self.index = index
         self.value = sum(d.value*Decimal(10)**e for e,d in enumerate(self.digits)) # might use int
-        
+
     def __len__(self):
         return len(self.digits)
 
@@ -289,7 +289,7 @@ class GroupContext(ContextBase):
         for digit in self.digits:
             yield digit
 
-        
+
 class DigitContext(ContextBase):
     """
     Represent one digit of a number and its context
@@ -331,7 +331,7 @@ def en_GB(number, ordinal):
     # name-parts for the short scale
     scale_base = 'm b tr quad quint sext'
     scale = ['', 'thousand'] + prod(scale_base, 'illion')
-    
+
     if ordinal and number.fraction:
         number.string = "cannot spell fractional numbers as ordinals :("
         return
@@ -350,7 +350,7 @@ def en_GB(number, ordinal):
 
     if number.rounded:
         number.prefix = 'rounded to '
-    
+
     if number.negative:
         number.prefix += 'minus '
 
@@ -436,7 +436,7 @@ def hu_HU(number, ordinal):
 
     For doublechecking: http://helyesiras.mta.hu
 
-    Currently supports: +/- 10^66 - 10^-7 
+    Currently supports: +/- 10^66 - 10^-7
 
     :copyright: (c) 2013 by Szabolcs Blága
     :license: BSD, see LICENSE in babel for more details.
@@ -447,7 +447,7 @@ def hu_HU(number, ordinal):
     scale = ['', 'ezer'] + prod(scale_base, 'illió illiárd')
     scale_ord = ['', 'ezre'] + prod(scale_base, 'illiomo illiárdo')
     # alternate spelling (millió, ezermillió, billió, ezerbillió, stb.)
-    
+
     # avoid using decimal by comparing number of digits
     if len(number.integer) > len(scale)*3:
         number.string = 'leírhatatlanul ' + ('sokadik' if ordinal else 'sok') + ' :)'
@@ -462,7 +462,7 @@ def hu_HU(number, ordinal):
 
     if number.rounded:
         number.prefix = 'kerekítve '
-    
+
     if number.negative:
         number.prefix += 'mínusz '
 
@@ -535,7 +535,6 @@ def hu_HU(number, ordinal):
             # create `ezer` instead of `egyezer` if it is the begining
             elif group.index == 1 and group.value == 1:
                 group.string = ''
-            
 
     frac_end = ' tized század ezred tízezred százezred milliomod'.split(' ')
     frac_end_ord = ' e o e e e o'.split(' ')
@@ -547,7 +546,3 @@ def hu_HU(number, ordinal):
         # add extra stuffing to fit general ordinal number suffix
         if ordinal:
             number.fraction.suffix += frac_end_ord[len(number.fraction)]
-
-    
-    
-    

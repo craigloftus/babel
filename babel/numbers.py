@@ -34,7 +34,7 @@ def get_currency_name(currency, count=None, locale=LC_NUMERIC):
 
     >>> get_currency_name('USD', locale='en_US')
     u'US Dollar'
-    
+
     .. versionadded:: 0.9.4
 
     :param currency: the currency code
@@ -350,7 +350,7 @@ def format_scientific(number, format=None, locale=LC_NUMERIC):
 
 def spell_number(number, ordinal=False, locale=LC_NUMERIC, **kwargs):
     """Return value spelled out for a specific locale
-    
+
     :param number: the number to format
     :param ordinal: cardinal or ordinal spelling
     :param locale: the `Locale` object or locale identifier
