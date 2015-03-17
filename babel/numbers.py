@@ -558,10 +558,14 @@ class NumberPattern(object):
         return '<%s %r>' % (type(self).__name__, self.pattern)
 
     def apply(self, value, locale, currency=None, force_frac=None):
-        frac_prec = force_frac or self.frac_prec
         if not isinstance(value, Decimal):
-            value = Decimal(str(value))
+            try:
+                value = Decimal(str(value))
+            except InvalidOperation:
+                raise NumberFormatError('%r is not a valid decimal number' %
+                                        value)
         value = value.scaleb(self.scale)
+        frac_prec = force_frac or self.frac_prec
         is_negative = int(value.is_signed())
         if self.exp_prec: # Scientific notation
             exp = value.adjusted()
