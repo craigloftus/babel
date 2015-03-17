@@ -562,8 +562,7 @@ class NumberPattern(object):
             try:
                 value = Decimal(str(value))
             except InvalidOperation:
-                raise NumberFormatError('%r is not a valid decimal number' %
-                                        value)
+                raise NumberFormatError('%r is not a valid number' % value)
         value = value.scaleb(self.scale)
         frac_prec = force_frac or self.frac_prec
         is_negative = int(value.is_signed())
@@ -608,10 +607,12 @@ class NumberPattern(object):
                       self._format_frac(b or '0', locale, force_frac))
         retval = u'%s%s%s' % (self.prefix[is_negative], number,
                               self.suffix[is_negative])
-        if u'¤' in retval:
+        if u'¤¤¤' in retval:
             retval = retval.replace(u'¤¤¤',
                 get_currency_name(currency, value, locale))
+        if u'¤¤' in retval:
             retval = retval.replace(u'¤¤', currency.upper())
+        if u'¤' in retval:
             retval = retval.replace(u'¤', get_currency_symbol(currency, locale))
         return retval
 
