@@ -22,6 +22,7 @@ except ImportError:
     from xml.etree import ElementTree
 
 from datetime import date
+from pickletools import optimize
 
 # Make sure we're using Babel source, and not some previously installed version
 sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]), '..'))
@@ -109,6 +110,11 @@ def _parse_currency_date(s):
 def _currency_sort_key(tup):
     code, start, end, tender = tup
     return int(not tender), start or date(1, 1, 1)
+
+
+def dump(data, filename):
+    with open(filename, 'wb') as f:
+        f.write(optimize(pickle.dumps(data, 2)))
 
 
 def main():
@@ -239,11 +245,7 @@ def main():
             for child in paternity.attrib['locales'].split():
                 parent_exceptions[child] = parent
 
-        outfile = open(global_path, 'wb')
-        try:
-            pickle.dump(global_data, outfile, 2)
-        finally:
-            outfile.close()
+        dump(global_data, global_path)
 
     # build a territory containment mapping for inheritance
     regions = {}
@@ -635,11 +637,7 @@ def main():
                 unit_patterns.setdefault(box, {})[pattern.attrib['count']] = \
                     text_type(pattern.text)
 
-        outfile = open(data_filename, 'wb')
-        try:
-            pickle.dump(data, outfile, 2)
-        finally:
-            outfile.close()
+        dump(data, data_filename)
 
 
 if __name__ == '__main__':
