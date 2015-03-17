@@ -59,7 +59,6 @@ number_types = integer_types + (float,)
 # when available but keep accepting pure Python decimals for compatibility
 if sys.version_info[:2] >= (3, 3):
     from decimal import Decimal, InvalidOperation, localcontext, ROUND_HALF_EVEN
-    Decimals = Decimal
 else:
     from decimal import (Decimal as _dec,
                          InvalidOperation as _invop,
@@ -71,12 +70,11 @@ else:
                               localcontext as _clctx,
                               ROUND_HALF_EVEN as _CRHE)
         Decimal = _cdec
-        Decimals = (_dec, _cdec)
         InvalidOperation = (_invop, _cinvop)
         localcontext = _clctx
         ROUND_HALF_EVEN = _CRHE
     except ImportError:
-        Decimal = Decimals = _dec
+        Decimal = _dec
         InvalidOperation = _invop
         localcontext = _lctx
         ROUND_HALF_EVEN = _RHE
