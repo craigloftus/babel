@@ -252,7 +252,7 @@ def format_decimal(number, format=None, locale=LC_NUMERIC):
     return pattern.apply(number, locale)
 
 
-def format_currency(number, currency, format=None, locale=LC_NUMERIC):
+def format_currency(number, currency, format='standard', locale=LC_NUMERIC):
     u"""Return formatted currency value.
 
     >>> format_currency(1099.98, 'USD', locale='en_US')
@@ -277,9 +277,7 @@ def format_currency(number, currency, format=None, locale=LC_NUMERIC):
     :param locale: the `Locale` object or locale identifier
     """
     locale = Locale.parse(locale)
-    if not format:
-        format = locale.currency_formats.get(format)
-    pattern = parse_pattern(format)
+    pattern = parse_pattern(locale.currency_formats.get(format, format))
     return pattern.apply(number, locale, currency=currency)
 
 
