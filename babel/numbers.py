@@ -252,7 +252,12 @@ def format_decimal(number, format=None, locale=LC_NUMERIC):
     return pattern.apply(number, locale)
 
 
-def format_currency(number, currency, format='standard', locale=LC_NUMERIC):
+class UnknownCurrencyFormatError(KeyError):
+    """Exception raised when an unknown currency format is requested."""
+
+
+def format_currency(number, currency, format=None, locale=LC_NUMERIC,
+                    format_type='standard'):
     u"""Return formatted currency value.
 
     >>> format_currency(1099.98, 'USD', locale='en_US')
@@ -262,7 +267,7 @@ def format_currency(number, currency, format='standard', locale=LC_NUMERIC):
     >>> format_currency(1099.98, 'EUR', locale='de_DE')
     u'1.099,98\\xa0\\u20ac'
 
-    The pattern can also be specified explicitly.  The currency is
+    The format can also be specified explicitly.  The currency is
     placed with the '¤' sign.  As the sign gets repeated the format
     expands (¤ being the symbol, ¤¤ is the currency abbreviation and
     ¤¤¤ is the full name of the currency):
@@ -272,12 +277,35 @@ def format_currency(number, currency, format='standard', locale=LC_NUMERIC):
     >>> format_currency(1099.98, 'EUR', u'#,##0.00 \xa4\xa4\xa4', locale='en_US')
     u'1,099.98 euros'
 
+    If a format is not specified the type of currency format to use
+    from the locale can be specified:
+
+    >>> format_currency(1099.98, 'EUR', locale='en_US', format_type='standard')
+    u'\\u20ac1,099.98'
+
+    When the given currency format type is not available, an exception is
+    raised:
+
+    >>> format_currency('1099.98', 'EUR', format_type='unknown')
+    Traceback (most recent call last):
+        ...
+    UnknownCurrencyFormatError: "'unknown' is not a known currency format type"
+
     :param number: the number to format
     :param currency: the currency code
+    :param format: the format string to use
     :param locale: the `Locale` object or locale identifier
+    :param format_type: the currency format type to use
     """
     locale = Locale.parse(locale)
-    pattern = parse_pattern(locale.currency_formats.get(format, format))
+    if not format:
+        try:
+            pattern = locale.currency_formats[format_type]
+        except KeyError:
+            raise UnknownCurrencyFormatError("%r is not a known currency format"
+                                            " type" % format_type)
+    else:
+        pattern = parse_pattern(format)
     return pattern.apply(number, locale, currency=currency)
 
 
